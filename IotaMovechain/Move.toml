@@ -1,0 +1,13 @@
+[package]
+name = "movechain"
+version = "0.0.1"
+edition = "2024.beta"
+
+[dependencies]
+#Iota = { local = "../../iota/crates/iota-framework/packages/iota-framework"}
+#Iota = { local = "../../iota/crates/iota-framework/packages/iota-framework"}
+Iota = { git = "https://github.com/iotaledger/iota.git", subdir = "crates/iota-framework/packages/iota-framework", rev = "framework/testnet" }
+
+[addresses]
+movechain =  "0x0"
+#iota =  "0000000000000000000000000000000000000000000000000000000000000002"
