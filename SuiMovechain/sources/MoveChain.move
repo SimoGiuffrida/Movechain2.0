@@ -5,7 +5,7 @@ module movechain::SupplyChain {
     use sui::transfer;
     use sui::dynamic_field;
 
-    // --- Codici di Errore ---
+    // --- Error Codes ---
     const E_CALLER_NOT_BUYER: u64 = 1;
     const E_DISTRIBUTOR_ALREADY_ASSIGNED: u64 = 2;
     const E_BUYER_ALREADY_ASSIGNED: u64 = 3;
@@ -14,7 +14,7 @@ module movechain::SupplyChain {
     const E_INVALID_SENSOR_DATA_RANGE: u64 = 6;
     const E_BUYER_NOT_ASSIGNED: u64 = 10;
     const E_DISTRIBUTOR_NOT_ASSIGNED: u64 = 11;
-    const E_NOT_SHARED: u64 = 12; // Aggiunto per coerenza, anche se non usato
+    const E_NOT_SHARED: u64 = 12; // Added for consistency, even if not used
 
     // --- Structs ---
 
@@ -34,14 +34,14 @@ module movechain::SupplyChain {
         buyer: address,
     }
 
-    // MODIFICA: Aggiunta la struct "Wrapper" per la condivisione
+    // MODIFICATION: Added the "Wrapper" struct for sharing
     public struct SharedProduct has key {
         id: UID,
-        // L'oggetto Product è ora contenuto qui
+        // The Product object is now contained here
         product: Product,
     }
 
-    // --- Funzioni Entry (Fase Owned) ---
+    // --- Entry Functions (Owned Phase) ---
 
     public entry fun create_product(ctx: &mut TxContext) {
         let producer_address = sender(ctx);
@@ -52,7 +52,7 @@ module movechain::SupplyChain {
             distributor: @0x0,
             buyer: @0x0,
         };
-        // Il contatore rimane un campo dinamico legato all'ID del prodotto
+        // The counter remains a dynamic field bound to the product ID
         dynamic_field::add(&mut product.id, 0u64, 0u64);
         transfer::transfer(product, producer_address);
     }
@@ -93,50 +93,52 @@ module movechain::SupplyChain {
         product.buyer = buyer;
     }
     
-    // MODIFICA: La funzione ora crea e condivide il wrapper SharedProduct
     public entry fun change_to_shared(product: Product, ctx: &mut TxContext) {
         assert!(sender(ctx) == product.owner, E_CALLER_NOT_OWNER);
         assert!(product.distributor != @0x0, E_DISTRIBUTOR_NOT_ASSIGNED);
         assert!(product.buyer != @0x0, E_BUYER_NOT_ASSIGNED);
 
-        // Crea il wrapper
+        // Create the wrapper
         let shared_wrapper = SharedProduct {
             id: new(ctx),
-            product: product, // Il prodotto viene "spostato" dentro il wrapper
+            product: product, // The product is "moved" inside the wrapper
         };
 
-        // Condividi il wrapper, non il prodotto originale
+        // Share the wrapper, not the original product
         transfer::share_object(shared_wrapper);
     }
 
-    // --- Funzioni Entry (Fase Shared) ---
+    // --- Entry Functions (Shared Phase) ---
 
-    // MODIFICA: La funzione ora accetta il wrapper SharedProduct
-    public entry fun update_sensor_data(
-        shared_product: &mut SharedProduct, // Accetta il wrapper per riferimento mutabile
+public entry fun update_sensor_data(
+        shared_product: &mut SharedProduct, // Accepts the wrapper as a mutable reference
         sensor_id: u64,
         sensor_data: u64,
         ctx: &mut TxContext
     ) {
         let participant = sender(ctx);
-        // L'accesso ai dati del prodotto avviene tramite il campo 'product' del wrapper
+        // Access to the product data happens through the wrapper's 'product' field
         let product = &mut shared_product.product;
-        assert!(participant == product.producer || participant == product.distributor || participant == product.buyer, E_INVALID_PARTICIPANT);
+        assert!(
+            participant == product.producer ||
+            participant == product.distributor ||
+            participant == product.buyer,
+            E_INVALID_PARTICIPANT
+        );
         
-        // L'ID a cui sono legati i campi dinamici è quello del prodotto interno
+        // The ID to which the dynamic fields are bound is that of the internal product
         let sensor: &mut Sensor = dynamic_field::borrow_mut(&mut product.id, sensor_id + 1);
         
         sensor.sensor_data = sensor_data;
         sensor.validity = sensor_data >= sensor.min_sensor_data && sensor_data <= sensor.max_sensor_data;
     }
     
-    // MODIFICA: La funzione ora consuma il wrapper SharedProduct per completare la consegna
     public entry fun confirm_delivery(shared_product: SharedProduct, ctx: &mut TxContext) {
         let buyer_address = sender(ctx);
         
-        // Estrai il prodotto dal wrapper. Il wrapper viene distrutto.
+        // Extract the product from the wrapper. The wrapper is destroyed.
         let SharedProduct { id: wrapper_id, product: mut product } = shared_product;
-        // Elimina l'UID del wrapper per liberare memoria
+        // Delete the wrapper UID to free memory
         object::delete(wrapper_id);
 
         assert!(buyer_address == product.buyer, E_CALLER_NOT_BUYER);
@@ -145,7 +147,7 @@ module movechain::SupplyChain {
         product.distributor = @0x0;
         product.buyer = @0x0;
         
-        // Trasferisci l'oggetto Product originale (ora modificato) al nuovo proprietario
+        // Transfer the original Product object to the new owner
         transfer::transfer(product, buyer_address);
     }
 }
