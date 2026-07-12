@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(iota *)",
+      "PowerShell(iota move *)",
+      "PowerShell(iota client *)",
+      "PowerShell($env:PATH = \"C:\\\\Users\\\\Simone\\\\Desktop\\\\Magistrale\\\\Movechain2.0\\\\IotaMovechain\\\\iota;$env:PATH\"; Start-Process -FilePath \"C:\\\\Users\\\\Simone\\\\Desktop\\\\Magistrale\\\\Movechain2.0\\\\IotaMovechain\\\\iota\\\\iota.exe\" -ArgumentList \"start\", \"--local\" -WindowStyle Normal -PassThru | Select-Object Id, ProcessName)",
+      "PowerShell(iota start *)",
+      "PowerShell(iota-localnet *)",
+      "PowerShell(Get-Content *)",
+      "PowerShell($address = \"0xa337fff0e4d85459388365c76fc20f6ec82ee7bf6aaabd6435a72d88c39448b4\"; $body = @{FixedAmountRequest=@{recipient=$address}} | ConvertTo-Json; $response = Invoke-RestMethod -Uri \"https://faucet.testnet.iota.cafe/v2/gas\" -Method POST -ContentType \"application/json\" -Body $body -ErrorAction SilentlyContinue; Write-Host \\($response | ConvertTo-Json\\))",
+      "PowerShell($address = \"0xa337fff0e4d85459388365c76fc20f6ec82ee7bf6aaabd6435a72d88c39448b4\"; $body = \"{`\"FixedAmountRequest`\":{`\"recipient`\":`\"$address`\"}}\"; Invoke-RestMethod -Uri \"https://faucet.testnet.iota.cafe/gas\" -Method POST -ContentType \"application/json\" -Body $body 2>&1 | ConvertTo-Json)",
+      "PowerShell($address = \"0xa337fff0e4d85459388365c76fc20f6ec82ee7bf6aaabd6435a72d88c39448b4\"; $body = \"{`\"FixedAmountRequest`\":{`\"recipient`\":`\"$address`\"}}\"; try { $r = Invoke-WebRequest -Uri \"https://faucet.testnet.iota.cafe/v1/gas\" -Method POST -ContentType \"application/json\" -Body $body -UseBasicParsing; $r.Content } catch { $_.Exception.Response.StatusCode; $_.Exception.Message })",
+      "PowerShell(iota keytool *)",
+      "PowerShell($address = \"0xa337fff0e4d85459388365c76fc20f6ec82ee7bf6aaabd6435a72d88c39448b4\"; $body = \"{`\"address`\":`\"$address`\"}\"; try { $r = Invoke-WebRequest -Uri \"https://faucet.testnet.iota.cafe/api/faucet\" -Method POST -ContentType \"application/json\" -Body $body -UseBasicParsing; $r.Content } catch { $_.Exception.Response.StatusCode.value__; $_.Exception.Message })",
+      "PowerShell($address = \"0xa337fff0e4d85459388365c76fc20f6ec82ee7bf6aaabd6435a72d88c39448b4\"; try { $r = Invoke-WebRequest -Uri \"https://faucet.testnet.iota.cafe/api/config\" -UseBasicParsing; $r.Content } catch { $_.Exception.Message })"
+    ]
+  }
+}
